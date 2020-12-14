@@ -1,8 +1,8 @@
-#remind
-Python script for reminding oneself of upcoming events by running a command.
+# Schedule
+Python script for scheduling the execution of a command.
 
 ```
-remind [-sfph] TIME COMMAND...
+schedule [-sfph] TIME COMMAND...
     -s:      run synchronuous, don't use a detached process
     -f:      run immediately if time is in the past
     -p:      keep stdout and stderr for detached process

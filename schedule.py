@@ -10,7 +10,7 @@ import subprocess
 
 def exit_help(code):
     msg = (
-        "remind [-sfph] TIME COMMAND...\n" +
+        "schedule [-sfph] TIME COMMAND...\n" +
         "    -s:      run synchronuous, don't use a detached process\n" +
         "    -f:      run immediately if time is in the past\n" +
         "    -p:      keep stdout and stderr for detached process\n" +
@@ -46,21 +46,21 @@ def main():
         if arg in ["-p", "--pipe"]:
             pipe = True
             continue
-        remind_time_str = arg
+        schedule_time_str = arg
         cmd = " ".join(sys.argv[i+1:])
         break
 
     try:
-        remind_time = dateparser.parse(
-            remind_time_str,
+        schedule_time = dateparser.parse(
+            schedule_time_str,
             settings={'PREFER_DATES_FROM': 'future'}
         ).astimezone()
     except Exception:
-        sys.stderr.write("failed to parse time from '" + remind_time_str + "'\n")
+        sys.stderr.write("failed to parse time from '" + schedule_time_str + "'\n")
         exit(1)
 
-    if not force and remind_time + timedelta(seconds=3) < startup_time:
-        sys.stderr.write("error: reminder time is in the past\n")
+    if not force and schedule_time + timedelta(seconds=3) < startup_time:
+        sys.stderr.write("error: scheduleer time is in the past\n")
         exit(1)
 
     if not synchronous:
@@ -76,8 +76,8 @@ def main():
             devnull.close()
         exit(0)
     
-    while remind_time > datetime.now().astimezone():
-        diff = remind_time - datetime.now().astimezone()
+    while schedule_time > datetime.now().astimezone():
+        diff = schedule_time - datetime.now().astimezone()
         if diff.seconds > 60 * 31:
             time.sleep(60 * 30)
         if diff.seconds == 0: break
