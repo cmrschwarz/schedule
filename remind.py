@@ -67,7 +67,7 @@ def main():
         if not pipe:
             devnull = open(os.devnull,"w")
         subprocess.Popen(
-            sys.argv[0:1] + ["-s", "-f"] + sys.argv[1:],
+            [os.path.realpath(__file__)] + ["-s", "-f"] + sys.argv[1:],
             start_new_session=True,
             stdout=sys.stdout if pipe else devnull,
             stderr=sys.stderr if pipe else devnull
