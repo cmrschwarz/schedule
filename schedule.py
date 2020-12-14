@@ -60,7 +60,7 @@ def main():
         exit(1)
 
     if not force and schedule_time + timedelta(seconds=3) < startup_time:
-        sys.stderr.write("error: scheduleer time is in the past\n")
+        sys.stderr.write("error: scheduled time is in the past\n")
         exit(1)
 
     if not synchronous:
@@ -80,6 +80,7 @@ def main():
         diff = schedule_time - datetime.now().astimezone()
         if diff.seconds > 60 * 31:
             time.sleep(60 * 30)
+            continue
         if diff.seconds == 0: break
         time.sleep(diff.seconds - 1)
             
