@@ -47,7 +47,7 @@ def main():
             pipe = True
             continue
         schedule_time_str = arg
-        cmd = " ".join(sys.argv[i+1:])
+        cmds = sys.argv[i+1:]
         break
 
     try:
@@ -84,7 +84,7 @@ def main():
         if diff.seconds == 0: break
         time.sleep(diff.seconds - 1)
             
-    os.system(cmd)
+    subprocess.call(cmds)
 
 
 if __name__ == "__main__":
