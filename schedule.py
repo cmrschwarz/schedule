@@ -109,7 +109,7 @@ def main():
         if not pipe:
             devnull = open(os.devnull,"w")
         subprocess.Popen(
-            [os.path.realpath(__file__)] + ["-b", str(startup_time.timestamp()), "-s", "-f", schedule_time_str] + cmds,
+            [__file__,  "-b", str(startup_time.timestamp()), "-s", "-f", schedule_time_str] + cmds,
             start_new_session=True,
             stdout=sys.stdout if pipe else devnull,
             stderr=sys.stderr if pipe else devnull
@@ -127,7 +127,9 @@ def main():
         else:
             break
         now = datetime.now().astimezone()
-            
+    try:
+        os.execvp(cmds[0], cmds)
+    except AttributeError:
     subprocess.call(cmds)
 
 
