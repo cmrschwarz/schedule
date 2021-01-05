@@ -1,12 +1,29 @@
 # Schedule
 Python script for scheduling the execution of a command.
 
+## Summary
+
 ```
-schedule [-sfph] TIME COMMAND...
+schedule [OPTIONS] TIME COMMAND...
+    detaches a process to execute COMMAND at the specified TIME
     -s:      run synchronuous, don't use a detached process
     -f:      run immediately if time is in the past
-    -p:      keep stdout and stderr for detached process
+    -p:      keep stdout and stderr for execuded command
     -h:      print this help and exit
-    TIME:    3min, or 17:00, etc..
+    -v:      print the scheduled time informally
+    -vv:     print the scheduled time precisely
+    -b TIME: relative TIMEs will be relative to this, default is the current time
+    TIME:    3min, 17:00, etc...
     COMMAND: any shell command
 ```
+
+## Examples
+* ```schedule 3min xmessage "Tea is done"```
+  * sets a simple reminder running in the background
+
+
+* ```schedule -v -s 15:00 poweroff```
+  * synchronuously waits for 15 o'clock in the terminal, then shuts of the computer
+  * immediately prints the time when the task will be performed 
+  
+    (to avoid date parsing ambiguitys) 

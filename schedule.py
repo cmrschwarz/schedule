@@ -13,13 +13,15 @@ import subprocess
 
 def exit_help(code):
     msg = (
-        "schedule [-sfph] TIME COMMAND...\n" +
+        "schedule [OPTIONS] TIME COMMAND...\n" +
+        "    detaches a process to execute COMMAND at the specified TIME\n"+
         "    -s:      run synchronuous, don't use a detached process\n" +
         "    -f:      run immediately if time is in the past\n" +
         "    -p:      keep stdout and stderr for execuded command\n" +
         "    -h:      print this help and exit\n" +
         "    -v:      print the scheduled time informally\n" +
         "    -vv:     print the scheduled time precisely\n" +
+        "    -b TIME: relative TIMEs will be relative to this, default is the current time\n"+
         "    TIME:    3min, 17:00, etc...\n"+
         "    COMMAND: any shell command\n"
     )
@@ -130,7 +132,7 @@ def main():
     try:
         os.execvp(cmds[0], cmds)
     except AttributeError:
-    subprocess.call(cmds)
+        subprocess.call(cmds)
 
 
 if __name__ == "__main__":
