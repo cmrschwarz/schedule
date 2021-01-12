@@ -24,6 +24,10 @@ schedule [OPTIONS] TIME COMMAND...
 
 * ```schedule -v -s 15:00 poweroff```
   * synchronuously waits for 15 o'clock in the terminal, then shuts of the computer
-  * immediately prints the time when the task will be performed 
-  
-    (to avoid date parsing ambiguitys) 
+  * immediately prints the time when the task will be performed
+
+    (to avoid date parsing ambiguitys)
+
+* ```export CMD='schedule -sp 5sec sh -c "echo hello && $CMD"'; sh -c "$CMD" ```
+  * a very silly way to print hello every 5 seconds
+  * accumulates small time errors due to the time it takes for the next process to launch
