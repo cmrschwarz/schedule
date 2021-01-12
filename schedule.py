@@ -138,10 +138,12 @@ def main():
             break
         now = datetime.now().astimezone()
     try:
-        os.execvp(cmds[0], cmds)
-    except AttributeError:
-        subprocess.call(cmds)
-
+        try:
+            os.execvp(cmds[0], cmds)
+        except AttributeError:
+            subprocess.call(cmds)
+    except FileNotFoundError:
+        sys.stderr.write("failed to execute command: file '" + cmds[0] + "' not found on path\n")
 
 if __name__ == "__main__":
     main()
