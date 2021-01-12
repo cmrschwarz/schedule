@@ -7,9 +7,13 @@ startup_time = datetime.now().astimezone()
 import sys
 import os
 import time
-import dateparser
 from datetime import timedelta
 import subprocess
+
+# use the submodule for dateparser if it is available
+# this fixes relative dates with non integer numbers like "1.5 min"
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + "/dateparser")
+import dateparser
 
 def exit_help(code):
     msg = (

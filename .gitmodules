@@ -1,0 +1,4 @@
+[submodule "dateparser"]
+	path = dateparser
+	url = https://github.com/Watchful1/dateparser.git
+	branch = support-floats
