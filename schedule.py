@@ -42,10 +42,14 @@ def main():
     pipe = False
     verbose = 0
     i = 0
+    args = sys.argv
     while True:
         i += 1
-        if len(sys.argv) < i + 2: exit_help(1)
-        arg = sys.argv[i]
+        if len(args) < i + 2: exit_help(1)
+        arg = args[i]
+        if arg[0] == "-" and len(arg) > 2:
+            args = args[:i] + ["-" + c for c in arg[1:]] + args[i+1:]
+            arg = arg[:2]
         if arg in ["-h", "--help"]:
             exit_help(0)
             continue
@@ -68,7 +72,7 @@ def main():
             verbose = 2
             continue
         if arg in ["-b", "--basetime"]:
-            bt=sys.argv[i+1]
+            bt=args[i+1]
             try:
                 startup_time = dateparser.parse(
                     bt,
@@ -81,7 +85,7 @@ def main():
             continue
 
         schedule_time_str = arg
-        cmds = sys.argv[i+1:]
+        cmds = args[i+1:]
         break
 
     try:
@@ -115,7 +119,7 @@ def main():
         if not pipe:
             devnull = open(os.devnull,"w")
         subprocess.Popen(
-            [__file__,  "-b", str(startup_time.timestamp()), "-s", "-f", schedule_time_str] + cmds,
+            [__file__,  "-sfb", str(startup_time.timestamp()), schedule_time_str] + cmds,
             start_new_session=True,
             stdout=sys.stdout if pipe else devnull,
             stderr=sys.stderr if pipe else devnull
