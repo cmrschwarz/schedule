@@ -8,10 +8,9 @@ schedule [OPTIONS] TIME COMMAND...
     detaches a process to execute COMMAND at the specified TIME
     -s:      run synchronuous, don't use a detached process
     -f:      run immediately if time is in the past
-    -p:      keep stdout and stderr for execuded command
+    -p:      keep stdout and stderr for executed command
     -h:      print this help and exit
-    -v:      print the scheduled time informally
-    -vv:     print the scheduled time precisely
+    -v:      announnce the scheduled time. -vv / -vvv for more precision
     -b TIME: relative TIMEs will be relative to this, default is the current time
     TIME:    3min, 17:00, etc...
     COMMAND: any shell command

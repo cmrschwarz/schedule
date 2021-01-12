@@ -21,10 +21,9 @@ def exit_help(code):
         "    detaches a process to execute COMMAND at the specified TIME\n"+
         "    -s:      run synchronuous, don't use a detached process\n" +
         "    -f:      run immediately if time is in the past\n" +
-        "    -p:      keep stdout and stderr for execuded command\n" +
+        "    -p:      keep stdout and stderr for executed command\n" +
         "    -h:      print this help and exit\n" +
-        "    -v:      print the scheduled time informally\n" +
-        "    -vv:     print the scheduled time precisely\n" +
+        "    -v:      announnce the scheduled time. -vv / -vvv for more precision\n" +
         "    -b TIME: relative TIMEs will be relative to this, default is the current time\n"+
         "    TIME:    3min, 17:00, etc...\n"+
         "    COMMAND: any shell command\n"
@@ -64,12 +63,9 @@ def main():
             continue
         if arg in ["-v", "--verbose"]:
             verbose += 1
-            if verbose > 2: 
-                sys.stderr.write("max verbosity level is 2\n")
+            if verbose > 3:
+                sys.stderr.write("max verbosity level is 3\n")
                 exit(1)
-            continue
-        if arg in ["-vv", "--veryverbose"]:
-            verbose = 2
             continue
         if arg in ["-b", "--basetime"]:
             bt=args[i+1]
@@ -110,6 +106,8 @@ def main():
             print("scheduled time was " + humanize.naturaltime(startup_time - schedule_time))
     elif verbose == 2:
         print("scheduled time is " + schedule_time.replace(microsecond=0).isoformat())
+    elif verbose == 3:
+        print("scheduled time is " + schedule_time.isoformat())
 
     if not force and schedule_time + timedelta(seconds=3) < startup_time:
         sys.stderr.write("error: scheduled time is in the past\n")
