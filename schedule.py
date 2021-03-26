@@ -33,6 +33,22 @@ def exit_help(code):
     else:
         sys.stderr.write(msg)
     exit(code)
+def timeparse(time_str):
+    global startup_time
+    # prevent flat integers from being interpreted weirdly (e.g. day of moth)
+    # since it's a common mistake to forget the unit (e.g minutes)
+    try:
+        i = int(time_str)
+    except:
+        i = None
+
+    if i is not None and i < 20000:
+        raise ValueError("invalid date")
+
+    return dateparser.parse(
+        time_str,
+        settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': startup_time}
+    ).astimezone()
 
 def main():
     global startup_time
@@ -70,10 +86,7 @@ def main():
         if arg in ["-b", "--basetime"]:
             bt=args[i+1]
             try:
-                startup_time = dateparser.parse(
-                    bt,
-                    settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': startup_time}
-                ).astimezone()
+                startup_time = timeparse(bt)
             except:
                 sys.stderr.write("failed to parse basetime from '" + bt + "'\n")
                 exit(1)
@@ -85,10 +98,7 @@ def main():
         break
 
     try:
-        schedule_time = dateparser.parse(
-            schedule_time_str,
-            settings={'PREFER_DATES_FROM': 'future', 'RELATIVE_BASE': startup_time}
-        ).astimezone()
+        schedule_time = timeparse(schedule_time_str)
     except:
         sys.stderr.write("failed to parse time from '" + schedule_time_str + "'\n")
         exit(1)
@@ -107,7 +117,7 @@ def main():
     elif verbose == 2:
         print("scheduled time is " + schedule_time.replace(microsecond=0).isoformat())
     elif verbose == 3:
-        print("scheduled time is " + schedule_time.isoformat())
+        print("scheduled time is " + schedule_time.isoformat(sep=' '))
 
     if not force and schedule_time + timedelta(seconds=3) < startup_time:
         sys.stderr.write("error: scheduled time is in the past\n")
@@ -117,7 +127,7 @@ def main():
         if not pipe:
             devnull = open(os.devnull,"w")
         subprocess.Popen(
-            [__file__,  "-sfb", str(startup_time.timestamp()), schedule_time_str] + cmds,
+            [__file__,  "-sfb", str(startup_time.replace(tzinfo=None).isoformat(sep=' ')), schedule_time_str] + cmds,
             start_new_session=True,
             stdout=sys.stdout if pipe else devnull,
             stderr=sys.stderr if pipe else devnull
