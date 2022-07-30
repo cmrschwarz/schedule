@@ -129,7 +129,7 @@ def timeformat(time, base_time, verbosity):
         else:
             return humanize.precisedelta(base_time - time, minimum_unit="seconds", format="%0.0f") + "ago"
     if verbosity == 2:
-        return time.replace(microsecond=0).isoformat(sep=' ')
+        return time.replace(microsecond=0).replace(tzinfo=None).isoformat(sep=' ')
     if verbosity >= 3: 
         return time.isoformat(sep=' ')
 
