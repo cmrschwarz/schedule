@@ -55,23 +55,20 @@ def list_schedules(verbosity, base_time):
             if len(proc_cli) < 2: continue
             startup_time = None
             fire_time = None
-            i = 1 
+            i = 1
             while i < len(proc_cli):
                 c = proc_cli[i]
                 if (c[0] == "-" and c[-1] == "b") or c == "--basetime":
-                    try:
-                        startup_time = timeparse(proc_cli[i+1], None)
-                        i += 2
-                        continue
-                    except:
+                    startup_time = timeparse(proc_cli[i+1], None)
+                    if startup_time is None:
                         break
+                    i += 2
+                    continue
                 if c[0] != "-":
-                    try:
-                        fire_time = timeparse(c, startup_time)
+                    fire_time = timeparse(c, startup_time)
+                    if fire_time is not None:
                         schedules.append((fire_time, " ".join(proc_cli[i+1:])))
-                        break
-                    except:
-                        break
+                    break
                 i += 1
     if not schedules:
         print("no running schedules")
@@ -92,12 +89,12 @@ def timeparse(time_str, base_time):
     # since it's a common mistake to forget the unit (e.g minutes)
     try:
         i = int(time_str)
-    except:
+    except ValueError:
         i = None
 
     if i is not None and i < 20000:
         raise ValueError("invalid date")
-    settings =  {}
+    settings = {}
     if base_time is None:
         parsers = [parser for parser in default_parsers if parser != 'relative-time']
         settings['PARSERS'] = parsers
@@ -109,10 +106,10 @@ def timeparse(time_str, base_time):
         "ignore",
         message="The localize method is no longer necessary, as this time zone supports the fold attribute",
     )
-
-    return dateparser.parse(
-        time_str,  settings=settings
-    ).astimezone()
+    res = dateparser.parse(time_str,  settings=settings)
+    if res is None:
+        return None
+    return res.astimezone()
 
 def timeformat(time, base_time, verbosity):
     if verbosity == 0:
@@ -120,7 +117,7 @@ def timeformat(time, base_time, verbosity):
             return "in " + humanize.naturaldelta(time - base_time)
         else:
             return humanize.naturaltime(time) + "ago"
-            
+
     if verbosity == 1:
         if time > base_time:
             return "in " + humanize.precisedelta(time - base_time, minimum_unit="seconds", format="%0.0f")
@@ -128,7 +125,7 @@ def timeformat(time, base_time, verbosity):
             return humanize.precisedelta(base_time - time, minimum_unit="seconds", format="%0.0f") + "ago"
     if verbosity == 2:
         return time.replace(microsecond=0).replace(tzinfo=None).isoformat(sep=' ')
-    if verbosity >= 3: 
+    if verbosity >= 3:
         return time.isoformat(sep=' ')
 
 def main():
@@ -141,7 +138,7 @@ def main():
     verbose = 0
     sched_list = False
     i = 0
-    
+
     #debug
     args = sys.argv
     #args = ["schedule", "10min", "alarm", "test"]
@@ -177,9 +174,8 @@ def main():
             continue
         if arg in ["-b", "--basetime"]:
             bt=args[i+1]
-            try:
-                base_time = timeparse(bt, None)
-            except:
+            base_time = timeparse(bt, None)
+            if base_time is None:
                 sys.stderr.write("failed to parse (absolute) basetime from '" + bt + "'\n")
                 return 1
             i += 1
@@ -188,7 +184,7 @@ def main():
         schedule_time_str = arg
         cmds = args[i+1:]
         break
-    
+
     if sched_list:
         list_schedules(verbose, base_time)
 
@@ -199,10 +195,9 @@ def main():
             return 1
         else:
             return 0
- 
-    try:
-        schedule_time = timeparse(schedule_time_str, base_time)
-    except:
+
+    schedule_time = timeparse(schedule_time_str, base_time)
+    if schedule_time is None:
         sys.stderr.write("failed to parse time from '" + schedule_time_str + "'\n")
         return 1
     if verbose != 0:
