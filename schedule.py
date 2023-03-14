@@ -14,9 +14,7 @@ from pathlib import Path
 import humanize
 import warnings
 
-# use the submodule for dateparser if it is available
-# this fixes relative dates with non integer numbers like "1.5 min"
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + "/dateparser")
+
 import dateparser
 from dateparser_data.settings import default_parsers
 def print_help(stderr=False):
