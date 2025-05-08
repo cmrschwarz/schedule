@@ -1,40 +1,49 @@
 #!/usr/bin/env python3
 from datetime import datetime
 
-#do imports after aquiring startup time to be a bit more precise
-script_startup_time = datetime.now().astimezone()
+import dateparser.timezone_parser
 
-import sys
-import os
-import time
-from datetime import timedelta
-import subprocess
-import psutil
-from pathlib import Path
-import humanize
-import warnings
-
+# do imports after aquiring startup time to be a bit more precise
+script_startup_time = datetime.now().astimezone()  # noqa
 
 import dateparser
-from dateparser_data.settings import default_parsers
+import warnings
+import humanize
+from pathlib import Path
+import psutil
+import subprocess
+from datetime import timedelta
+import time
+import os
+import sys
+
+DATETIME_DEFAULT_PARSERS = [
+    "timestamp",
+    "relative-time",
+    "custom-formats",
+    "absolute-time",
+]
+
+
 def print_help(stderr=False):
     msg = (
         "schedule [OPTIONS] TIME COMMAND...\n" +
-        "    detaches a process to execute COMMAND at the specified TIME\n"+
+        "    detaches a process to execute COMMAND at the specified TIME\n" +
         "    -s:      run synchronuous, don't use a detached process\n" +
         "    -f:      run immediately if time is in the past\n" +
         "    -p:      keep stdout and stderr for executed command\n" +
         "    -h:      print this help\n" +
         "    -l:      list running instances of schedule\n" +
         "    -v:      announnce the scheduled time. -vv / -vvv for more precision\n" +
-        "    -b TIME: relative TIMEs will be relative to this, default is the current time\n"+
-        "    TIME:    3min, 17:00, etc...\n"+
+        "    -b TIME: relative TIMEs will be relative to this, default is the current time\n" +
+        "    TIME:    3min, 17:00, etc...\n" +
         "    COMMAND: any shell command\n"
     )
     if stderr:
         sys.stderr.write(msg)
     else:
         sys.stdout.write(msg)
+
 
 def list_schedules(verbosity, base_time):
     base_name = Path(sys.argv[0]).stem
@@ -45,14 +54,16 @@ def list_schedules(verbosity, base_time):
         proc_cli = None
         if proc_base_name == python_name:
             proc_cli = proc.cmdline()
-            if len(proc_cli) < 2: continue
+            if len(proc_cli) < 2:
+                continue
             proc_cli = proc_cli[1:]
             proc_base_name = Path(proc_cli[0]).stem
 
         if proc_base_name == base_name:
             if not proc_cli:
                 proc_cli = proc.cmdline()
-            if len(proc_cli) < 2: continue
+            if len(proc_cli) < 2:
+                continue
             startup_time = None
             fire_time = None
             i = 1
@@ -84,6 +95,7 @@ def list_schedules(verbosity, base_time):
     for s in schedules:
         print(s[0] + ":" + " " * (max_time_len - len(s[0]) + 1) + s[1])
 
+
 def timeparse(time_str, base_time):
     # prevent flat integers from being interpreted weirdly (e.g. day of moth)
     # since it's a common mistake to forget the unit (e.g minutes)
@@ -96,7 +108,9 @@ def timeparse(time_str, base_time):
         raise ValueError("invalid date")
     settings = {}
     if base_time is None:
-        parsers = [parser for parser in default_parsers if parser != 'relative-time']
+        parsers = [
+            parser for parser in DATETIME_DEFAULT_PARSERS if parser != 'relative-time'
+        ]
         settings['PARSERS'] = parsers
     else:
         settings['PREFER_DATES_FROM'] = 'future'
@@ -110,6 +124,7 @@ def timeparse(time_str, base_time):
     if res is None:
         return None
     return res.astimezone()
+
 
 def timeformat(time, base_time, verbosity):
     if verbosity == 0:
@@ -128,6 +143,7 @@ def timeformat(time, base_time, verbosity):
     if verbosity >= 3:
         return time.isoformat(sep=' ')
 
+
 def main():
     base_time = script_startup_time
     error_if_no_time = True
@@ -139,14 +155,14 @@ def main():
     sched_list = False
     i = 0
 
-    #debug
+    # debug
     args = sys.argv
-    #args = ["schedule", "10min", "alarm", "test"]
-    #args = ["schedule", "-l"]
+    # args = ["schedule", "10min", "alarm", "test"]
+    # args = ["schedule", "-l"]
     while i + 1 < len(args):
         i += 1
         arg = args[i]
-        if arg[0] == "-" and len(arg) > 2:
+        if arg[0] == "-" and len(arg) > 2 and arg[1] != '-':
             args = args[:i] + ["-" + c for c in arg[1:]] + args[i+1:]
             arg = arg[:2]
         if arg in ["-l", "--list"]:
@@ -173,10 +189,11 @@ def main():
                 return 1
             continue
         if arg in ["-b", "--basetime"]:
-            bt=args[i+1]
+            bt = args[i+1]
             base_time = timeparse(bt, None)
             if base_time is None:
-                sys.stderr.write("failed to parse (absolute) basetime from '" + bt + "'\n")
+                sys.stderr.write(
+                    "failed to parse (absolute) basetime from '" + bt + "'\n")
                 return 1
             i += 1
             continue
@@ -188,7 +205,6 @@ def main():
     if sched_list:
         list_schedules(verbose, base_time)
 
-
     if not got_schedule:
         if error_if_no_time:
             print_help(True)
@@ -198,7 +214,8 @@ def main():
 
     schedule_time = timeparse(schedule_time_str, base_time)
     if schedule_time is None:
-        sys.stderr.write("failed to parse time from '" + schedule_time_str + "'\n")
+        sys.stderr.write("failed to parse time from '" +
+                         schedule_time_str + "'\n")
         return 1
     if verbose != 0:
         print("scheduled time is " + timeformat(schedule_time, base_time, verbose))
@@ -209,9 +226,10 @@ def main():
 
     if not synchronous:
         if not pipe:
-            devnull = open(os.devnull,"w")
+            devnull = open(os.devnull, "w")
         subprocess.Popen(
-            [__file__,  "-sfb", str(base_time.replace(tzinfo=None).isoformat(sep=' ')), schedule_time_str] + cmds,
+            [__file__,  "-sfb",
+                str(base_time.replace(tzinfo=None).isoformat(sep=' ')), schedule_time_str] + cmds,
             start_new_session=True,
             stdout=sys.stdout if pipe else devnull,
             stderr=sys.stderr if pipe else devnull
@@ -235,10 +253,12 @@ def main():
         except AttributeError:
             subprocess.call(cmds)
     except FileNotFoundError:
-        sys.stderr.write("failed to execute command: file '" + cmds[0] + "' not found on path\n")
+        sys.stderr.write("failed to execute command: file '" +
+                         cmds[0] + "' not found on path\n")
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())
